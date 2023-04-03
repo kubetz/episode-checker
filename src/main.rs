@@ -13,21 +13,21 @@ mod walker;
 
 #[derive(Parser)]
 struct Cli {
-    #[arg(long, default_value = ".")]
-    dir: String,
-
-    #[arg(long, default_value_t = -1)]
-    diff: i64,
+    dir: Option<String>,
+    diff: Option<i64>,
 }
 
-// TODO: Write a README.md
+// TODO: Write a README.md.
 
 fn main() {
+    // Parse positional command line arguments and provide fallback values.
     let cli = Cli::parse();
+    let dir = cli.dir.unwrap_or(String::from("."));
+    let diff = cli.diff.unwrap_or(-1);
 
     // Print the show name and all the episodes that are newer than the latest in the directory.
     let callback = |show: Show| {
-        if let Some(episodes) = api::check_api(&show, cli.diff) {
+        if let Some(episodes) = api::check_api(&show, diff) {
             println!("{}", show.name);
             episodes
                 .iter()
@@ -36,5 +36,5 @@ fn main() {
     };
 
     // Start walking the given directory and call callback for each directory representing a show.
-    walker(Path::new(&cli.dir), &callback).expect("Problem processing directories");
+    walker(Path::new(&dir), &callback).expect("Problem processing directories");
 }
