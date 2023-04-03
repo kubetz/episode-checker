@@ -34,10 +34,8 @@ impl<'a> Show<'a> {
             let episode: u8 = caps.get(2).unwrap().as_str().parse().unwrap();
 
             // Always save the newest season and episode number.
-            if season > self.season {
+            if season > self.season || (season == self.season && episode > self.number) {
                 self.season = season;
-                self.number = episode;
-            } else if season == self.season && episode > self.number {
                 self.number = episode;
             }
         }
