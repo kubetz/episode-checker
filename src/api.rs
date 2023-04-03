@@ -44,8 +44,8 @@ impl AsDate for String {
 /// available on TVMaze. Episode number and season must be non-zero.
 /// If exit gracefully if the show or the specific episode cannot be found as
 /// that could be caused by a random directory. However issues with parsing will
-/// panic as that shouln't normally happend and should be addressed.
-pub fn check_api(show: &Show, diff: i64) -> Option<Vec<Episode>> {
+/// panic as that shouldn't normally happen and should be addressed.
+pub fn check_api(show: &Show, duration_diff: Duration) -> Option<Vec<Episode>> {
     let url = format!(
         "https://api.tvmaze.com/singlesearch/shows?q={}&embed=episodes",
         urlencoding::encode(show.name)
@@ -59,17 +59,17 @@ pub fn check_api(show: &Show, diff: i64) -> Option<Vec<Episode>> {
     let json_iter = &mut show_json._embedded.episodes.into_iter();
 
     // Find the airdate of the given show and parse it. If no episode could be found, we exit gracefully.
-    let air = match json_iter.find(|e| e.season == show.season && e.number == show.number) {
+    let cur_date = match json_iter.find(|e| e.season == show.season && e.number == show.number) {
         Some(e) => e.airdate.as_date(),
         None => return None,
     };
 
-    // Get current time to make sure we won't be listing episodes that didn't air yet.
-    let cur = OffsetDateTime::now_utc().date();
+    // Get target time to make sure we won't be listing episodes that air after that.
+    let target_date = OffsetDateTime::now_utc().date() + duration_diff;
 
     // Collect all shows that are newer than the given one and do it in a inefficient, but stylish way 🤐.
     let episodes: Vec<Episode> = json_iter
-        .filter(|s| s.airdate.as_date() > air && s.airdate.as_date() < cur + Duration::days(diff))
+        .filter(|s| s.airdate.as_date() > cur_date && s.airdate.as_date() < target_date)
         .collect();
 
     match episodes.is_empty() {

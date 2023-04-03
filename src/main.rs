@@ -22,9 +22,8 @@ struct Cli {
 fn main() {
     // Parse positional command line arguments and provide fallback values.
     let cli = Cli::parse();
+    let diff = Duration::days(cli.diff.unwrap_or(-1));
     let dir = cli.dir.unwrap_or(".".into());
-    let diff = cli.diff.unwrap_or(-1);
-
     let dir = Path::new(&dir);
     assert!(dir.is_dir(), "The given path is not a directory.");
 
