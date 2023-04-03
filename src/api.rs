@@ -16,12 +16,16 @@ struct MazeEmbedded {
     episodes: Vec<Episode>,
 }
 
-/// Single retrieved episode.
+/// Single retrieved episode. Returned from [`check_api`]
+/// if it is newer than the one found locally.
 #[derive(Deserialize)]
 pub struct Episode {
+    /// String representation of the airdate.
     pub airdate: String,
-    /// Some shows on TVMaze have weird season numbering (e.g. using year there).
+    /// Season of the episode. Some shows use year here.
+    /// That is the reason we are using bigger integer type.
     pub season: u16,
+    /// Episode number.
     pub number: u8,
 }
 
@@ -29,6 +33,9 @@ pub struct Episode {
 /// it should be called on Strings that are expected to contain date. If that keeps
 /// failing it means the API got changed and the code needs to be updated.
 trait AsDate {
+    /// Return [`Date`] representation of the String.
+    /// Expects "year-month-day" format.
+    /// Will panic if called on invalid value.
     fn as_date(&self) -> Date;
 }
 
