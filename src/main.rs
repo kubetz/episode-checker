@@ -2,6 +2,7 @@ use std::path::Path;
 
 use clap::Parser;
 use show::Show;
+use time::Duration;
 use walker::walker;
 
 #[macro_use]
@@ -11,9 +12,12 @@ mod api;
 mod show;
 mod walker;
 
+/// CLI parser structure with positional arguments.
 #[derive(Parser)]
 struct Cli {
+    /// Directory from which shows will be checked recursively for new episodes.
     dir: Option<String>,
+    /// Number of days from today representing the target airdate (default: -1).
     diff: Option<i64>,
 }
 
