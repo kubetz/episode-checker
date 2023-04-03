@@ -1,6 +1,5 @@
-use serde::Deserialize;
-use time::macros::format_description;
-use time::{Date, Duration, OffsetDateTime};
+use serde::{Deserialize, Deserializer};
+use time::{macros::format_description, Date, Duration, OffsetDateTime};
 
 use crate::show::Show;
 
@@ -16,12 +15,12 @@ struct MazeEmbedded {
     episodes: Vec<Episode>,
 }
 
-/// Single retrieved episode. Returned from [`check_api`]
-/// if it is newer than the one found locally.
+/// Single episode. Returned from [`check_api`] if it's newer than the given one.
 #[derive(Deserialize)]
 pub struct Episode {
-    /// String representation of the airdate.
-    pub airdate: String,
+    /// Air date of the episode. Parsed to [`time::Date`] with a custom deserializer.
+    #[serde(deserialize_with = "deserialize_date", rename = "airdate")]
+    pub date: Date,
     /// Season of the episode. Some shows use year here.
     /// That is the reason we are using bigger integer type.
     pub season: u16,
@@ -29,29 +28,21 @@ pub struct Episode {
     pub number: u8,
 }
 
-/// Built-in conversion from String to Date. We don't use Option and instead panic as
-/// it should be called on Strings that are expected to contain date. If that keeps
-/// failing it means the API got changed and the code needs to be updated.
-trait AsDate {
-    /// Return [`Date`] representation of the String.
-    /// Expects "year-month-day" format.
-    /// Will panic if called on invalid value.
-    fn as_date(&self) -> Date;
+/// Deserialize the date from the string in the format "YYYY-MM-DD".
+fn deserialize_date<'de, D>(deserializer: D) -> Result<Date, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let str: &str = Deserialize::deserialize(deserializer)?;
+    let format = format_description!("[year]-[month]-[day]");
+    Date::parse(str, &format).map_err(serde::de::Error::custom)
 }
 
-impl AsDate for String {
-    fn as_date(&self) -> Date {
-        let format = format_description!("[year]-[month]-[day]");
-        Date::parse(self, format).expect("Wrong airdate format")
-    }
-}
-
-/// Uses TVMaze API to check if there are any new episodes for the given show.
-/// Returns None if no newer episodes were found. Show name must be present and
-/// available on TVMaze. Episode number and season must be non-zero.
-/// If exit gracefully if the show or the specific episode cannot be found as
-/// that could be caused by a random directory. However issues with parsing will
-/// panic as that shouldn't normally happen and should be addressed.
+/// Use TVMaze API to check if there are any new episodes for the given show.
+/// Returns None if no newer episodes were found. Episode number and season
+/// must be non-zero. Exit gracefully if the show or the specific episode
+/// cannot be found as that could be caused by a random directory. However
+/// issues with parsing will panic as that means incompatible API.
 pub fn check_api(show: &Show, duration_diff: Duration) -> Option<Vec<Episode>> {
     let url = format!(
         "https://api.tvmaze.com/singlesearch/shows?q={}&embed=episodes",
@@ -65,18 +56,18 @@ pub fn check_api(show: &Show, duration_diff: Duration) -> Option<Vec<Episode>> {
     };
     let json_iter = &mut show_json._embedded.episodes.into_iter();
 
-    // Find the airdate of the given show and parse it. If no episode could be found, we exit gracefully.
+    // Find the airdate of the given show. If no episode could be found, we exit gracefully.
     let cur_date = match json_iter.find(|e| e.season == show.season && e.number == show.number) {
-        Some(e) => e.airdate.as_date(),
+        Some(e) => e.date,
         None => return None,
     };
 
-    // Get target time to make sure we won't be listing episodes that air after that.
+    // Get target time to make sure we won't include episodes that will air after that.
     let target_date = OffsetDateTime::now_utc().date() + duration_diff;
 
-    // Collect all shows that are newer than the given one and do it in a inefficient, but stylish way 🤐.
+    // Collect all episodes that are newer than the given one.
     let episodes: Vec<Episode> = json_iter
-        .filter(|s| s.airdate.as_date() > cur_date && s.airdate.as_date() < target_date)
+        .filter(|s| s.date > cur_date && s.date < target_date)
         .collect();
 
     match episodes.is_empty() {

@@ -12,7 +12,6 @@ clap = { version = "4.2.1", features = ["derive"] }
 lazy_static = "1.4.0"
 regex = "1.7.3"
 serde = { version = "1.0.159", features = ["derive"] }
-serde_json = "1.0.95"
 time = { version = "0.3.20", features = ["parsing", "formatting", "macros"] }
 ureq = { version = "2.6.2", features = ["json"] }
 urlencoding = "2.1.2"
