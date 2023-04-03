@@ -6,8 +6,6 @@ pub fn walker<F>(path: &Path, callback: &F) -> io::Result<()>
 where
     F: Fn(Show),
 {
-    assert!(path.is_dir());
-
     // First collect all the directories and files.
     let mut dirs = vec![];
     let mut files = vec![];
