@@ -25,12 +25,13 @@ pub struct Episode {
     pub number: u8,
 }
 
-// Built-in conversion from String to Date.
+/// Built-in conversion from String to Date. We don't use Option and instead panic as
+/// it should be called on Strings that are expected to contain date. If that keeps
+/// failing it means the API got changed and the code needs to be updated.
 trait AsDate {
     fn as_date(&self) -> Date;
 }
 
-// We don't use Option and instead just panic failed parsing means that the API is broken.
 impl AsDate for String {
     fn as_date(&self) -> Date {
         let format = format_description!("[year]-[month]-[day]");
