@@ -33,9 +33,9 @@ fn deserialize_date<'de, D>(deserializer: D) -> Result<Date, D::Error>
 where
     D: Deserializer<'de>,
 {
-    let str: &str = Deserialize::deserialize(deserializer)?;
+    let str: String = Deserialize::deserialize(deserializer)?;
     let format = format_description!("[year]-[month]-[day]");
-    Date::parse(str, &format).map_err(serde::de::Error::custom)
+    Date::parse(&str, &format).map_err(serde::de::Error::custom)
 }
 
 /// Use TVMaze API to check if there are any new episodes for the given show.
