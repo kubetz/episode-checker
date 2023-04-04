@@ -9,7 +9,7 @@ mod api;
 mod show;
 mod walker;
 
-/// CLI parser structure with positional arguments.
+/// Tool for checking new TV show episodes.
 #[derive(Parser)]
 struct Cli {
     /// Directory from which shows will be checked recursively for new episodes.
@@ -18,18 +18,15 @@ struct Cli {
     diff: Option<i64>,
 }
 
-// TODO: Introduce more callbacks for walker.
-// TODO: Write a README.md.
-
 fn main() {
-    // Parses positional command line arguments and provide fallback values.
+    // Parse positional command line arguments and provide fallback values.
     let cli = Cli::parse();
     let diff = Duration::days(cli.diff.unwrap_or(-1));
     let dir = cli.dir.unwrap_or(".".into());
     let dir = Path::new(&dir);
     assert!(dir.is_dir(), "The given path is not a directory.");
 
-    // Prints the show name and all the episodes that are newer than the latest in the directory.
+    // Print the show name and all the episodes that are newer than the latest in the directory.
     let callback = |show: Show| {
         if let Some(episodes) = api::check_api(&show, diff) {
             println!("{}", show.name);
@@ -39,6 +36,6 @@ fn main() {
         }
     };
 
-    // Starts walking the given directory and call callback for each directory representing a show.
+    // Start walking the given directory and call callback for each directory representing a show.
     walker(Path::new(&dir), &callback).expect("Problem processing directories");
 }
