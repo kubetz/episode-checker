@@ -57,10 +57,9 @@ pub fn check_api(show: &Show, duration_diff: Duration) -> Option<Vec<Episode>> {
     let json_iter = &mut show_json._embedded.episodes.into_iter();
 
     // Find the airdate of the given show. If no episode could be found, we exit gracefully.
-    let cur_date = match json_iter.find(|e| e.season == show.season && e.number == show.number) {
-        Some(e) => e.date,
-        None => return None,
-    };
+    let cur_date = json_iter
+        .find(|e| (e.season, e.number) == (show.season, show.number))?
+        .date;
 
     // Get target time to make sure we won't include episodes that will air after that.
     let target_date = OffsetDateTime::now_utc().date() + duration_diff;
