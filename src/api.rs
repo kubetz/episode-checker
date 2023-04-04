@@ -28,7 +28,7 @@ pub struct Episode {
     pub number: u8,
 }
 
-/// Deserialize the date from the string in the format "YYYY-MM-DD".
+/// Deserializes the date from the string in the format "YYYY-MM-DD".
 fn deserialize_date<'de, D>(deserializer: D) -> Result<Date, D::Error>
 where
     D: Deserializer<'de>,
@@ -38,9 +38,9 @@ where
     Date::parse(&str, &format).map_err(serde::de::Error::custom)
 }
 
-/// Use TVMaze API to check if there are any new episodes for the given show.
+/// Uses TVMaze API to check if there are any new episodes for the given show.
 /// Returns None if no newer episodes were found. Episode number and season
-/// must be non-zero. Exit gracefully if the show or the specific episode
+/// must be non-zero. Exits gracefully if the show or the specific episode
 /// cannot be found as that could be caused by a random directory. However
 /// issues with parsing will panic as that means incompatible API.
 pub fn check_api(show: &Show, duration_diff: Duration) -> Option<Vec<Episode>> {

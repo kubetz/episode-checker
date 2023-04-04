@@ -31,8 +31,7 @@ impl<'a> Show<'a> {
 
     /// Updates the show with the season and episode based on the file path.
     pub fn update(&mut self, path: &Path) {
-        if let Ok((a, (b, (season, episode)))) = Self::parse_episode(path) {
-            dbg!(a, b, season, episode);
+        if let Ok((_, (_, (season, episode)))) = Self::parse_episode(path) {
             // Always save the newest season and episode number.
             if season > self.season || (season == self.season && episode > self.number) {
                 self.season = season;
