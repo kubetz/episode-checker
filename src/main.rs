@@ -5,9 +5,6 @@ use show::Show;
 use time::Duration;
 use walker::walker;
 
-#[macro_use]
-extern crate lazy_static;
-
 mod api;
 mod show;
 mod walker;
@@ -21,17 +18,18 @@ struct Cli {
     diff: Option<i64>,
 }
 
+// TODO: Introduce more callbacks for walker.
 // TODO: Write a README.md.
 
 fn main() {
-    // Parse positional command line arguments and provide fallback values.
+    // Parses positional command line arguments and provide fallback values.
     let cli = Cli::parse();
     let diff = Duration::days(cli.diff.unwrap_or(-1));
     let dir = cli.dir.unwrap_or(".".into());
     let dir = Path::new(&dir);
     assert!(dir.is_dir(), "The given path is not a directory.");
 
-    // Print the show name and all the episodes that are newer than the latest in the directory.
+    // Prints the show name and all the episodes that are newer than the latest in the directory.
     let callback = |show: Show| {
         if let Some(episodes) = api::check_api(&show, diff) {
             println!("{}", show.name);
@@ -41,6 +39,6 @@ fn main() {
         }
     };
 
-    // Start walking the given directory and call callback for each directory representing a show.
+    // Starts walking the given directory and call callback for each directory representing a show.
     walker(Path::new(&dir), &callback).expect("Problem processing directories");
 }
