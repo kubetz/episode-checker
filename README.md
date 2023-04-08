@@ -39,9 +39,10 @@ It initially started as a simple Python script. One of the first things a baby R
 
 I tried to go for something more robust than a simple top-down block of code. The implementation includes:
 - Parsing of CLI arguments using [clap](https://docs.rs/clap/latest/clap/).
-- Using HTTP client [ureq](https://docs.rs/ureq/latest/ureq/). That is more lightweight (and synchronous 🙃) than [reqwest](https://docs.rs/reqwest/latest/reqwest/) + [tokio](https://docs.rs/tokio/latest/tokio/).
+- Using HTTP client [ureq](https://docs.rs/ureq/latest/ureq/). That is more lightweight than [reqwest](https://docs.rs/reqwest/latest/reqwest/) + [tokio](https://docs.rs/tokio/latest/tokio/).
 - Deserializing JSON responses using [serde](https://docs.rs/serde/latest/serde/) including a custom deserializer.
-- Parsing text using [nom](https://docs.rs/nom/latest/nom/). This turned to be quite fun 😅.
+- Parsing text using [nom](https://docs.rs/nom/latest/nom/).
+- Error handling using [thiserror](https://docs.rs/thiserror/latest/thiserror/).
 - Other stuff: callbacks, generics, iterators, file system access, etc.
 - Oh, and comments, a whole lot of comments.  
 
