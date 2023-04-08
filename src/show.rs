@@ -1,4 +1,5 @@
-use std::path::Path;
+use crate::prelude::*;
+use std::path::PathBuf;
 
 use nom::{
     bytes::complete::tag,
@@ -6,38 +7,38 @@ use nom::{
     combinator::map_res,
     multi::many_till,
     sequence::{pair, preceded},
-    IResult,
 };
 
 /// Show represents ... wait for it ... a TV show 🤯.
 /// Season and number types must be in sync with [`crate::checker::Episode`].
 #[derive(Debug)]
-pub struct Show<'a> {
-    pub name: &'a str,
+pub struct Show {
+    pub name: String,
     pub season: u16,
     pub number: u8,
 }
 
-impl<'a> Show<'a> {
+impl Show {
     /// Creates a new show from the path of the directory representing the name of the show.
     /// Initial season and episode numbers are set to 0 as we will parse them from files later.
-    pub fn new(path: &'a Path) -> Option<Self> {
-        path.file_name().map(|name| Self {
-            name: name.to_str().unwrap(),
+    pub fn new(path: PathBuf) -> Result<Self> {
+        Ok(Self {
+            name: Self::path_to_file_name(path)?,
             season: 0,
             number: 0,
         })
     }
 
     /// Updates the show with the season and episode based on the file path.
-    pub fn update(&mut self, path: &Path) {
-        if let Ok((_, (_, (season, episode)))) = Self::parse_episode(path) {
+    pub fn update(&mut self, path: PathBuf) -> Result<()> {
+        if let Ok((season, episode)) = Self::parse_episode(Self::path_to_file_name(path)?) {
             // Always save the newest season and episode number.
             if season > self.season || (season == self.season && episode > self.number) {
                 self.season = season;
                 self.number = episode;
             }
         }
+        Ok(())
     }
 
     /// Checks if the show is valid.
@@ -47,8 +48,9 @@ impl<'a> Show<'a> {
 
     /// Parses the episode from the file name. Result contains rest of the unparsed input,
     /// all the characters before the season and episode number and then the season/number.
-    fn parse_episode(input: &Path) -> IResult<&str, (Vec<char>, (u16, u8))> {
-        many_till(
+    fn parse_episode(name: String) -> Result<(u16, u8)> {
+        let input = name.clone();
+        let result = many_till(
             // Match any character until the second parser matches.
             anychar,
             // We are matching a pair that get parsed into u16 and u8.
@@ -59,6 +61,23 @@ impl<'a> Show<'a> {
                 map_res(preceded(tag("E"), digit1), str::parse::<u8>),
             ),
             // Parse file name as a &str.
-        )(input.file_name().unwrap().to_str().unwrap())
+        )(input.as_str())
+        // Remove useless parts of the result.
+        .map(|(_, (_, (season, episode)))| (season, episode))
+        // Convert nom error to our error.
+        .map_err(|_: nom::Err<()>| Error::Parse(name));
+
+        result
+    }
+
+    /// Returns the file name from the path.
+    fn path_to_file_name(path: PathBuf) -> Result<String> {
+        match path.file_name() {
+            Some(name) => name
+                .to_str()
+                .map(String::from)
+                .ok_or(Error::InvalidFile(path)),
+            None => Err(Error::InvalidFile(path)),
+        }
     }
 }
