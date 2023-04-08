@@ -1,6 +1,7 @@
 use serde::{Deserialize, Deserializer};
 use time::{macros::format_description, Date, Duration, OffsetDateTime};
 
+use crate::prelude::*;
 use crate::show::Show;
 
 /// Internal struct to deserialize the json data.
@@ -29,7 +30,7 @@ pub struct Episode {
 }
 
 /// Deserializes the date from the string in the format "YYYY-MM-DD".
-fn deserialize_date<'de, D>(deserializer: D) -> Result<Date, D::Error>
+fn deserialize_date<'de, D>(deserializer: D) -> std::result::Result<Date, D::Error>
 where
     D: Deserializer<'de>,
 {
@@ -38,27 +39,29 @@ where
     Date::parse(&str, &format).map_err(serde::de::Error::custom)
 }
 
-/// Uses TVMaze API to check if there are any new episodes for the given show.
-/// Returns None if no newer episodes were found. Episode number and season
-/// must be non-zero. Exits gracefully if the show or the specific episode
-/// cannot be found as that could be caused by a random directory. However
-/// issues with parsing will panic as that means incompatible API.
-pub fn check_api(show: &Show, duration_diff: Duration) -> Option<Vec<Episode>> {
+/// Uses TVMaze API to check if there are any new episodes for
+/// the given show. Episode number and season must be non-zero.
+pub fn check_api(show: &Show, duration_diff: Duration) -> Result<Vec<Episode>> {
+    // Create an url for the API endpoint that contains encoded show name.
+    // Ask or all episode data right away to minimize the number of requests.
     let url = format!(
         "https://api.tvmaze.com/singlesearch/shows?q={}&embed=episodes",
-        urlencoding::encode(show.name)
+        urlencoding::encode(show.name.as_str())
     );
 
     // Deserialize all relevant json data and get the iterator.
     let show_json: MazeShow = match ureq::get(&url).call() {
-        Ok(res) => res.into_json().expect("Wrong JSON data"),
-        Err(_) => return None,
+        Ok(res) => res
+            .into_json()
+            .map_err(|_| Error::WrongJSON(show.name.clone()))?,
+        Err(_) => return Err(Error::CannotLoad(show.name.clone())),
     };
     let json_iter = &mut show_json._embedded.episodes.into_iter();
 
-    // Find the airdate of the given show. If no episode could be found, we exit gracefully.
+    // Find the airdate of the given show.
     let cur_date = json_iter
-        .find(|e| (e.season, e.number) == (show.season, show.number))?
+        .find(|e| (e.season, e.number) == (show.season, show.number))
+        .ok_or(Error::NotFound(show.name.clone(), show.season, show.number))?
         .date;
 
     // Get target time to make sure we won't include episodes that will air after that.
@@ -69,8 +72,5 @@ pub fn check_api(show: &Show, duration_diff: Duration) -> Option<Vec<Episode>> {
         .filter(|s| s.date > cur_date && s.date < target_date)
         .collect();
 
-    match episodes.is_empty() {
-        true => None,
-        false => Some(episodes),
-    }
+    Ok(episodes)
 }
