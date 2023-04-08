@@ -19,6 +19,6 @@ pub enum Error {
     #[error("Wrong JSON data for {0}")]
     WrongJSON(String),
 
-    #[error("Matching episode not found for S{1:0>2}E{2:0>2} of {0}")]
+    #[error("Episode S{1:0>2}E{2:0>2} not found for {0}")]
     NotFound(String, u16, u8),
 }
