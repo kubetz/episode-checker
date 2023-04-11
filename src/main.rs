@@ -1,7 +1,7 @@
 use clap::Parser;
 use prelude::*;
 use show::Show;
-use std::{fs::canonicalize, path::PathBuf, process};
+use std::{fs::canonicalize, path::PathBuf};
 use time::Duration;
 use walker::walker;
 
@@ -38,17 +38,7 @@ fn main() -> Result<()> {
                     .for_each(|e| println!("\tS{:0>2}E{:0>2}", e.season, e.number));
             }
         }
-        Err(e) => match e {
-            // If we cannot load the show data, it likely means it is not a directory of the show.
-            prelude::Error::CannotLoad() | prelude::Error::NotFound(_, _) => {
-                eprintln!("{}\n\tSkipping ({e})", show.name);
-            }
-            // Rest of the errors is ... a show stopper 😏.
-            _ => {
-                eprintln!("{}\n\tExiting ({e})", show.name);
-                process::exit(1);
-            }
-        },
+        Err(e) => eprintln!("{}\n\tSkipping ({e})", show.name),
     };
 
     // Start walking the given directory and call callback for each directory representing a show.
