@@ -35,6 +35,10 @@ where
     D: Deserializer<'de>,
 {
     let str: String = Deserialize::deserialize(deserializer)?;
+    // To simplify things empty airdate is transformed to an irelevant date.
+    if str.is_empty() {
+        return Ok(Date::MIN);
+    }
     let format = format_description!("[year]-[month]-[day]");
     Date::parse(&str, &format).map_err(serde::de::Error::custom)
 }
