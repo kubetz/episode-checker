@@ -4,21 +4,21 @@ pub type Result<T> = std::result::Result<T, Error>;
 
 #[derive(Error, Debug)]
 pub enum Error {
-    #[error("I/O error: {0}")]
-    IO(#[from] std::io::Error),
+    #[error("i/o error: {0}")]
+    Io(#[from] std::io::Error),
 
-    #[error("Error parsing input {0}")]
-    Parse(String),
+    #[error("error parsing input: {0}")]
+    Parse(#[source] nom::Err<()>),
 
-    #[error("Invalid file {0}")]
+    #[error("wrong JSON data: {0}")]
+    WrongJSON(#[source] std::io::Error),
+
+    #[error("cannot load show from the API")]
+    CannotLoad(),
+
+    #[error("invalid file {0}")]
     InvalidFile(std::path::PathBuf),
 
-    #[error("Cannot load show {0}")]
-    CannotLoad(String),
-
-    #[error("Wrong JSON data for {0}")]
-    WrongJSON(String),
-
-    #[error("Episode S{1:0>2}E{2:0>2} not found for {0}")]
-    NotFound(String, u16, u8),
+    #[error("episode S{0:0>2}E{1:0>2} not found")]
+    NotFound(u16, u8),
 }
