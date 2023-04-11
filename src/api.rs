@@ -51,17 +51,15 @@ pub fn check_api(show: &Show, duration_diff: Duration) -> Result<Vec<Episode>> {
 
     // Deserialize all relevant json data and get the iterator.
     let show_json: MazeShow = match ureq::get(&url).call() {
-        Ok(res) => res
-            .into_json()
-            .map_err(|_| Error::WrongJSON(show.name.clone()))?,
-        Err(_) => return Err(Error::CannotLoad(show.name.clone())),
+        Ok(res) => res.into_json().map_err(Error::WrongJSON)?,
+        Err(_) => return Err(Error::CannotLoad()),
     };
     let json_iter = &mut show_json._embedded.episodes.into_iter();
 
     // Find the airdate of the given show.
     let cur_date = json_iter
         .find(|e| (e.season, e.number) == (show.season, show.number))
-        .ok_or(Error::NotFound(show.name.clone(), show.season, show.number))?
+        .ok_or(Error::NotFound(show.season, show.number))?
         .date;
 
     // Get target time to make sure we won't include episodes that will air after that.

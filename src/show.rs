@@ -49,7 +49,6 @@ impl Show {
     /// Parses the episode from the file name. Result contains rest of the unparsed input,
     /// all the characters before the season and episode number and then the season/number.
     fn parse_episode(name: String) -> Result<(u16, u8)> {
-        let input = name.clone();
         let result = many_till(
             // Match any character until the second parser matches.
             anychar,
@@ -61,11 +60,11 @@ impl Show {
                 map_res(preceded(tag("E"), digit1), str::parse::<u8>),
             ),
             // Parse file name as a &str.
-        )(input.as_str())
+        )(name.as_str())
         // Remove useless parts of the result.
         .map(|(_, (_, (season, episode)))| (season, episode))
         // Convert nom error to our error.
-        .map_err(|_: nom::Err<()>| Error::Parse(name));
+        .map_err(Error::Parse);
 
         result
     }
