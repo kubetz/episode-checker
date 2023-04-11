@@ -29,25 +29,23 @@ fn main() -> Result<()> {
 
     // Print the show name and all the episodes that are newer than the latest in the directory.
     let callback = |show: Show| match api::check_api(&show, diff) {
-        // If we successfully managed to check the episode, we will print the show
-        // name and if list of new episodes or inform the user that there are none.
+        // If we successfully managed to check the episode, we will print the list of new episodes.
         Ok(episodes) => {
-            println!("{}", show.name);
-            match episodes.len() {
-                0 => println!("\tnone"),
-                _ => episodes
+            if !episodes.is_empty() {
+                println!("{}", show.name);
+                episodes
                     .iter()
-                    .for_each(|e| println!("\tS{:0>2}E{:0>2}", e.season, e.number)),
+                    .for_each(|e| println!("\tS{:0>2}E{:0>2}", e.season, e.number));
             }
         }
         Err(e) => match e {
             // If we cannot load the show data, it likely means it is not a directory of the show.
             prelude::Error::CannotLoad() | prelude::Error::NotFound(_, _) => {
-                eprintln!("{}\n\tskipping ({e})", show.name);
+                eprintln!("{}\n\tSkipping ({e})", show.name);
             }
             // Rest of the errors is ... a show stopper 😏.
             _ => {
-                eprintln!("{}\n\texiting ({e})", show.name);
+                eprintln!("{}\n\tExiting ({e})", show.name);
                 process::exit(1);
             }
         },
