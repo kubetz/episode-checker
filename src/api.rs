@@ -19,7 +19,7 @@ struct MazeEmbedded {
 /// Single episode. Returned from [`check_api`] if it's newer than the given one.
 #[derive(Deserialize)]
 pub struct Episode {
-    /// Air date of the episode. Parsed to [`time::Date`] with a custom deserializer.
+    /// Air date of the episode. Parsed to [`Date`] with a custom deserializer.
     #[serde(deserialize_with = "deserialize_date", rename = "airdate")]
     pub date: Date,
     /// Season of the episode. Some shows use year here.
@@ -35,7 +35,7 @@ where
     D: Deserializer<'de>,
 {
     let str: String = Deserialize::deserialize(deserializer)?;
-    // To simplify things empty airdate is transformed to an irelevant date.
+    // To simplify things empty air date is transformed to an irrelevant date.
     if str.is_empty() {
         return Ok(Date::MIN);
     }
@@ -60,7 +60,7 @@ pub fn check_api(show: &Show, duration_diff: Duration) -> Result<Vec<Episode>> {
     };
     let json_iter = &mut show_json._embedded.episodes.into_iter();
 
-    // Find the airdate of the given show.
+    // Find the air date of the given show.
     let cur_date = json_iter
         .find(|e| (e.season, e.number) == (show.season, show.number))
         .ok_or(Error::NotFound(show.season, show.number))?

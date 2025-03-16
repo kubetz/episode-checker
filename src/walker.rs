@@ -4,7 +4,7 @@ use crate::prelude::*;
 use crate::show::Show;
 
 /// Walk through the directory recursively to parse all the shows matching directory
-/// names. For each directory representing a show an episode with highest season and
+/// names. For each directory representing a show an episode with the highest season and
 /// episode number is found and then the callback is called with the parsed [`Show`].
 pub fn walker<F: Fn(Show)>(path: PathBuf, callback: &F) -> Result<()> {
     // Collect all the directories and files.
@@ -13,7 +13,7 @@ pub fn walker<F: Fn(Show)>(path: PathBuf, callback: &F) -> Result<()> {
 
     // Read the directory and filter all non-valid entries.
     for entry in read_dir(path.clone())?.filter_map(|e| e.ok()) {
-        // We will save all the files and directories for for later.
+        // We will save all the files and directories for later.
         match entry.file_type()? {
             t if t.is_dir() => dirs.push(entry.path()),
             t if t.is_file() => files.push(entry.path()),
