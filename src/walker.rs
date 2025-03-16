@@ -26,7 +26,7 @@ pub fn walker<F: Fn(Show)>(path: PathBuf, callback: &F) -> Result<()> {
 
     // Update the show with the files we found.
     for file in files {
-        show.update(file)?;
+        show.update(&file)?;
     }
 
     // The show should be valid now. Time for a callback.

@@ -32,7 +32,7 @@ fn main() -> Result<()> {
         // If we successfully managed to check the episode, we will print the list of new episodes.
         Ok(episodes) => {
             if !episodes.is_empty() {
-                println!("{}", show.name);
+                println!("{}\t\t\"{}\"", show.name, show.path.display());
                 for e in episodes {
                     println!("\tS{:0>2}E{:0>2}", e.season, e.number);
                 }
