@@ -69,9 +69,9 @@ pub fn check_api(show: &Show, duration_diff: Duration) -> Result<Vec<Episode>> {
     // Get target time to make sure we won't include episodes that will air after that.
     let target_date = OffsetDateTime::now_utc().date() + duration_diff;
 
-    // Collect all episodes that are newer than the given one.
+    // Collect all episodes that were already released and are following current episode.
     let episodes: Vec<Episode> = json_iter
-        .filter(|s| s.date > cur_date && s.date < target_date)
+        .filter(|s| s.date >= cur_date && s.date < target_date && s.number > show.number)
         .collect();
 
     Ok(episodes)
