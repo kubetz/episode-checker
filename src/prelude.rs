@@ -11,7 +11,7 @@ pub enum Error {
     Parse(#[source] nom::Err<()>),
 
     #[error("wrong JSON data: {0}")]
-    WrongJSON(#[source] std::io::Error),
+    WrongJSON(#[source] ureq::Error),
 
     #[error("cannot load show from the API")]
     CannotLoad(),

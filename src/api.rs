@@ -55,7 +55,7 @@ pub fn check_api(show: &Show, duration_diff: Duration) -> Result<Vec<Episode>> {
 
     // Deserialize all relevant json data and get the iterator.
     let show_json: MazeShow = match ureq::get(&url).call() {
-        Ok(res) => res.into_json().map_err(Error::WrongJSON)?,
+        Ok(mut res) => res.body_mut().read_json().map_err(Error::WrongJSON)?,
         Err(_) => return Err(Error::CannotLoad()),
     };
     let json_iter = &mut show_json._embedded.episodes.into_iter();

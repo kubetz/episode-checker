@@ -7,6 +7,7 @@ use nom::{
     combinator::map_res,
     multi::many_till,
     sequence::{pair, preceded},
+    Parser,
 };
 
 /// Show represents ... wait for it ... a TV show 🤯.
@@ -59,8 +60,9 @@ impl Show {
                 // Right after it there should be an episode number preceded by "E".
                 map_res(preceded(tag("E"), digit1), str::parse::<u8>),
             ),
-            // Parse file name as a &str.
-        )(name.as_str())
+        )
+        // Parse file name as a &str.
+        .parse(name.as_str())
         // Remove useless parts of the result.
         .map(|(_, (_, (season, episode)))| (season, episode))
         // Convert nom error to our error.
