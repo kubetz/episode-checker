@@ -73,7 +73,7 @@ pub fn check_api(show: &Show, duration_diff: Duration) -> Result<Vec<Episode>> {
     // Collect all episodes that were already released and are following current episode.
     let episodes: Vec<Episode> = json_iter
         .filter(|s| s.date >= cur_date && s.date < target_date)
-        .filter(|s| (s.season, s.number) != (show.season, show.number))
+        .filter(|s| s.season > show.season || s.number > show.number)
         .collect();
 
     Ok(episodes)
