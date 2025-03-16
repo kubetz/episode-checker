@@ -34,7 +34,8 @@ pub fn walker<F: Fn(Show)>(path: PathBuf, callback: &F) -> Result<()> {
         callback(show);
     }
 
-    // Recursively walk through all the directories.
+    // Recursively walk through sorted directories.
+    dirs.sort();
     for dir in dirs {
         walker(dir, callback)?;
     }
