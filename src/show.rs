@@ -32,7 +32,7 @@ impl Show {
 
     /// Updates the show with the season and episode based on the file path.
     pub fn update(&mut self, path: PathBuf) -> Result<()> {
-        if let Ok((season, episode)) = Self::parse_episode(Self::path_to_file_name(path)?) {
+        if let Ok((season, episode)) = Self::parse_episode(&Self::path_to_file_name(path)?) {
             // Always save the newest season and episode number.
             if season > self.season || (season == self.season && episode > self.number) {
                 self.season = season;
@@ -49,8 +49,8 @@ impl Show {
 
     /// Parses the episode from the file name. Result contains rest of the unparsed input,
     /// all the characters before the season and episode number and then the season/number.
-    fn parse_episode(name: String) -> Result<(u16, u8)> {
-        let result = many_till(
+    fn parse_episode(name: &str) -> Result<(u16, u8)> {
+        many_till(
             // Match any character until the second parser matches.
             anychar,
             // We are matching a pair that get parsed into u16 and u8.
@@ -62,13 +62,11 @@ impl Show {
             ),
         )
         // Parse file name as a &str.
-        .parse(name.as_str())
+        .parse(name)
         // Remove useless parts of the result.
         .map(|(_, (_, (season, episode)))| (season, episode))
         // Convert nom error to our error.
-        .map_err(Error::Parse);
-
-        result
+        .map_err(Error::Parse)
     }
 
     /// Returns the file name from the path.

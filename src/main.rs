@@ -33,9 +33,9 @@ fn main() -> Result<()> {
         Ok(episodes) => {
             if !episodes.is_empty() {
                 println!("{}", show.name);
-                episodes
-                    .iter()
-                    .for_each(|e| println!("\tS{:0>2}E{:0>2}", e.season, e.number));
+                for e in episodes {
+                    println!("\tS{:0>2}E{:0>2}", e.season, e.number);
+                }
             }
         }
         Err(e) => eprintln!("{}\n\tSkipping ({e})", show.name),

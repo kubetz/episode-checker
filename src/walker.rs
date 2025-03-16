@@ -1,4 +1,4 @@
-use std::{fs::read_dir, path::PathBuf};
+use std::{fs::read_dir, path::PathBuf, result::Result as ResultExt};
 
 use crate::prelude::*;
 use crate::show::Show;
@@ -12,7 +12,7 @@ pub fn walker<F: Fn(Show)>(path: PathBuf, callback: &F) -> Result<()> {
     let mut files = vec![];
 
     // Read the directory and filter all non-valid entries.
-    for entry in read_dir(path.clone())?.filter_map(|e| e.ok()) {
+    for entry in read_dir(&path)?.filter_map(ResultExt::ok) {
         // We will save all the files and directories for later.
         match entry.file_type()? {
             t if t.is_dir() => dirs.push(entry.path()),

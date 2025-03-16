@@ -7,7 +7,8 @@ use crate::show::Show;
 /// Internal struct to deserialize the json data.
 #[derive(Deserialize)]
 struct MazeShow {
-    _embedded: MazeEmbedded,
+    #[serde(rename = "_embedded")]
+    embedded: MazeEmbedded,
 }
 
 /// Internal struct to deserialize the embedded episodes.
@@ -43,7 +44,7 @@ where
     Date::parse(&str, &format).map_err(serde::de::Error::custom)
 }
 
-/// Uses TVMaze API to check if there are any new episodes for
+/// Uses <http://tvmaze.com> API to check if there are any new episodes for
 /// the given show. Episode number and season must be non-zero.
 pub fn check_api(show: &Show, duration_diff: Duration) -> Result<Vec<Episode>> {
     // Create an url for the API endpoint that contains encoded show name.
@@ -58,7 +59,7 @@ pub fn check_api(show: &Show, duration_diff: Duration) -> Result<Vec<Episode>> {
         Ok(mut res) => res.body_mut().read_json().map_err(Error::WrongJSON)?,
         Err(_) => return Err(Error::CannotLoad()),
     };
-    let json_iter = &mut show_json._embedded.episodes.into_iter();
+    let json_iter = &mut show_json.embedded.episodes.into_iter();
 
     // Find the air date of the given show.
     let cur_date = json_iter
