@@ -32,13 +32,13 @@ fn main() -> Result<()> {
         // If we successfully managed to check the episode, we will print the list of new episodes.
         Ok(episodes) => {
             if !episodes.is_empty() {
-                println!("{}\t\t\"{}\"", show.name, show.path.display());
+                println!("{:30}{:>70}", show.name, show.path.display());
                 for e in episodes {
                     println!("\tS{:0>2}E{:0>2}", e.season, e.number);
                 }
             }
         }
-        Err(e) => eprintln!("{}\n\tSkipping ({e})", show.name),
+        Err(e) => eprintln!("{:30}{:>70}\n\tSkipping ({e})", show.name, show.path.display()),
     };
 
     // Start walking the given directory and call callback for each directory representing a show.
