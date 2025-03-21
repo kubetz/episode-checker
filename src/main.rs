@@ -1,9 +1,8 @@
 use clap::Parser;
-use prelude::*;
 use show::Show;
 use std::{fs::canonicalize, path::PathBuf};
 use time::Duration;
-use walker::walker;
+use walker::walk_dir;
 
 mod api;
 mod prelude;
@@ -19,7 +18,7 @@ struct Cli {
     diff: Option<i64>,
 }
 
-fn main() -> Result<()> {
+fn main() {
     // Parse positional command line arguments and provide fallback values.
     let cli = Cli::parse();
     let diff = Duration::days(cli.diff.unwrap_or(-1));
@@ -42,7 +41,7 @@ fn main() -> Result<()> {
     };
 
     // Start walking the given directory and call callback for each directory representing a show.
-    walker(dir, &callback)?;
-
-    Ok(())
+    if let Err(e) = walk_dir(&dir, &callback) {
+        eprintln!("Error: {e}");
+    }
 }

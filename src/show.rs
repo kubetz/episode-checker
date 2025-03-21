@@ -1,31 +1,31 @@
 use crate::prelude::*;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 use nom::{
+    Parser,
     bytes::complete::tag,
     character::complete::{anychar, digit1},
     combinator::map_res,
     multi::many_till,
     sequence::{pair, preceded},
-    Parser,
 };
 
 /// Show represents ... wait for it ... a TV show 🤯.
 /// Season and number types must be in sync with [`crate::checker::Episode`].
 #[derive(Debug)]
-pub struct Show {
+pub struct Show<'a> {
     pub name: String,
-    pub path: PathBuf,
+    pub path: &'a Path,
     pub season: u16,
     pub number: u8,
 }
 
-impl Show {
+impl<'a> Show<'a> {
     /// Creates a new show from the path of the directory representing the name of the show.
     /// Initial season and episode numbers are set to 0 as we will parse them from files later.
-    pub fn new(path: PathBuf) -> Result<Self> {
+    pub fn new(path: &'a Path) -> Result<Self> {
         Ok(Self {
-            name: Self::path_to_file_name(&path)?,
+            name: Self::path_to_file_name(path)?,
             path,
             season: 0,
             number: 0,
@@ -33,7 +33,7 @@ impl Show {
     }
 
     /// Updates the show with the season and episode based on the file path.
-    pub fn update(&mut self, path: &Path) -> Result<()> {
+    pub fn update(&mut self, path: &'a Path) -> Result<()> {
         if let Ok((season, episode)) = Self::parse_episode(&Self::path_to_file_name(path)?) {
             // Always save the newest season and episode number.
             if season > self.season || (season == self.season && episode > self.number) {
@@ -72,13 +72,13 @@ impl Show {
     }
 
     /// Returns the file name from the path.
-    fn path_to_file_name(path: &Path) -> Result<String> {
+    fn path_to_file_name(path: &'a Path) -> Result<String> {
         match path.file_name() {
             Some(name) => name
                 .to_str()
                 .map(String::from)
-                .ok_or(Error::InvalidFile(path.to_path_buf())),
-            None => Err(Error::InvalidFile(path.to_path_buf())),
+                .ok_or(Error::invalid_file(path)),
+            None => Err(Error::invalid_file(path)),
         }
     }
 }

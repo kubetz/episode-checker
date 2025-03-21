@@ -1,3 +1,4 @@
+use std::path::Path;
 use thiserror::Error;
 
 pub type Result<T> = std::result::Result<T, Error>;
@@ -17,8 +18,15 @@ pub enum Error {
     CannotLoad(),
 
     #[error("invalid file {0}")]
-    InvalidFile(std::path::PathBuf),
+    InvalidFile(Box<std::path::Path>),
 
     #[error("episode S{0:0>2}E{1:0>2} not found")]
     NotFound(u16, u8),
+}
+
+impl Error {
+    // Create an invalid file error.
+    pub(crate) fn invalid_file(path: &Path) -> Self {
+        Self::InvalidFile(path.into())
+    }
 }
